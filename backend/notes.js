@@ -1,52 +1,83 @@
-const fs = require('fs');
-const NOTES_STORAGE = 'notes.json';
+const fs = require("fs");
+const NOTES_STORAGE = "notes.json";
 
 const fetchNotes = () => {
   try {
-    const noteString = fs.readFileSync(NOTES_STORAGE)
+    const noteString = fs.readFileSync(NOTES_STORAGE);
     return JSON.parse(noteString);
-    } catch(e) {
-      return []
-    }
-}
+  } catch (e) {
+    return [];
+  }
+};
 
 const saveNotes = notes => {
-  fs.writeFileSync(NOTES_STORAGE, JSON.stringify(notes))
+  fs.writeFileSync(NOTES_STORAGE, JSON.stringify(notes));
+};
 
-}
-const addNote = (title, body) => {
-  // console.log('Adding new note')
-  // console.log(`title: ${title}`)
-  // console.log(`body: ${body}`)
-  let notes = fetchNotes()
-  const note = {
+const addNote = (title, body, id) => {
+
+  console.log(`Adding new note title: ${title}`)
+
+  let notes = fetchNotes();
+  let note = {
     title: title,
-    body: body
+    body: body,
+    id: id
+  };
+
+  const doubles = notes.filter(note => {
+    return note.id === id;
+  });
+
+  if (doubles.length === 0) {
+    notes.push(note);
+    saveNotes(notes);
+    return note;
   }
+};
 
-  const doubles = notes.filter((note) => {
-    return note.title === title
-  })
+const removeNote = title => {
+  const notes = fetchNotes();
+  console.log(`Removing note: ${title}`);
 
-  if (doubles.length == 0) {
-    notes.push(note)
-    saveNotes(notes)
-    return note
-  }
-}
+  let indexToRemove = null;
+  notes.forEach((note, i) => {
+    if (note.title === title) {
+      indexToRemove = i;
+      return;
+    }
+  });
 
-const removeNote = (title) => {
-  console.log(`Removing note: ${title}`)
-}
+  notes.splice(indexToRemove, 1);
+  fs.writeFileSync(NOTES_STORAGE, JSON.stringify(notes));
+};
 
-const getNote = (title) => {
-  console.log(`Getting note: ${title}`)
-}
+const updateNote = (title, body, id) => {
+  console.log(`Updating note: ${title} body:${body} id: ${id}`);
 
+  let notes = fetchNotes();
+  const noteUpdated = {
+    title: title,
+    body: body,
+    id: id
+  };
+
+  notes.filter(note => {
+    if (note.id === id) {
+      notes.splice(notes.indexOf(note), 1, noteUpdated);
+    }
+  });
+  saveNotes(notes);
+};
+
+const getNote = title => {
+  // console.log(`Getting note: ${title}`);
+};
 
 module.exports = {
   addNote,
   fetchNotes,
   getNote,
-  removeNote
-}
+  removeNote,
+  updateNote
+};
